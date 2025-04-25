@@ -21,7 +21,7 @@ jobs:
     - uses: psf/black@stable
   
   check-mypy:
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     steps:
     - uses: actions/checkout@v4
     # - uses: jpetrucciani/mypy-check@0.930
