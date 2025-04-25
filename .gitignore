@@ -1,0 +1,6 @@
+/dist
+.mypy_cache
+
+*.pyc
+
+/src/hatch_nativelib/_version.py
