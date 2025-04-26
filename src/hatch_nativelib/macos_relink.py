@@ -184,13 +184,13 @@ def get_package(name: str) -> Package:
         raise ValueError(f"Could not find pkgconf package '{name}'")
 
     libdirs: T.List[pathlib.Path] = []
-    for l in shlex.split(r.stdout.decode("utf-8").strip()):
+    for l in shlex.split(r.stdout.decode("utf-8").strip()):  # type: ignore[arg-type, union-attr]
         assert l.startswith("-L")
         libdirs.append(pathlib.Path(l[2:]))
 
     libs = []
     r = pkgconf.run_pkgconf(name, "--libs-only-l", "--static", capture_output=True)
-    for l in shlex.split(r.stdout.decode("utf-8").strip()):
+    for l in shlex.split(r.stdout.decode("utf-8").strip()):  # type: ignore[arg-type, union-attr]
         assert l.startswith("-l")
         lname = l[2:]
         libname = f"lib{lname}.dylib"

@@ -282,7 +282,7 @@ def _write_libinit_py(
         )
         # TODO: should this be a fatal error
         if r.returncode == 0:
-            module = r.stdout.decode("utf-8").strip()
+            module = r.stdout.decode("utf-8").strip()  # type: ignore[arg-type, union-attr]
             contents.append(f"import {module}")
 
     if contents[-1] != "":
