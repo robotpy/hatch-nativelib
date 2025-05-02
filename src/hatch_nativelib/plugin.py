@@ -10,6 +10,7 @@ from packaging.markers import Marker
 import pkgconf
 
 from .config import PcFileConfig
+from .util import maybe_write_file
 from .validate import parse_input
 
 INITPY_VARNAME = "pkgconf_pypi_initpy"
@@ -153,8 +154,8 @@ class NativelibHook(BuildHookInterface):
 
         self.app.display_info(f"Generating {pcfile}")
 
-        with open(pcfile, "w") as fp:
-            fp.writelines(f"{line}\n" for line in contents)
+        content = ("\n".join(contents)) + "\n"
+        maybe_write_file(pcfile, content)
 
         build_data["artifacts"].append(pcfile_rel.as_posix())
 
@@ -331,5 +332,5 @@ def _write_libinit_py(
 
         contents += ["", "__lib = __load_library()", ""]
 
-    with open(init_py, "w") as fp:
-        fp.writelines(f"{line}\n" for line in contents)
+    content = ("\n".join(contents)) + "\n"
+    maybe_write_file(init_py, content)
