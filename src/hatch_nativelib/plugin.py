@@ -289,46 +289,60 @@ def _write_libinit_py(
     if contents[-1] != "":
         contents.append("")
 
-    contents += [
-        "def __load_library():",
-        "    from os.path import abspath, join, dirname, exists",
-    ]
-
-    if is_macos:
-        contents += ["    from ctypes import CDLL, RTLD_GLOBAL"]
-    else:
-        contents += ["    from ctypes import cdll", ""]
-
-    for lib in libs:
-        rel = lib.relative_to(init_py.parent)
-        components = ", ".join(map(repr, rel.parts))
-
+    if libs:
         contents += [
-            "    root = abspath(dirname(__file__))",
-            f"    lib_path = join(root, {components})",
-            "",
-            "    try:",
+            "def __load_library():",
+            "    from os.path import abspath, join, dirname, exists",
         ]
 
         if is_macos:
-            contents.append(f"        return CDLL(lib_path, mode=RTLD_GLOBAL)")
+            contents += ["    from ctypes import CDLL, RTLD_GLOBAL"]
         else:
-            contents.append(f"        return cdll.LoadLibrary(lib_path)")
+            contents += ["    from ctypes import cdll", ""]
 
-        contents += [
-            "    except FileNotFoundError:",
-            f"        if not exists(lib_path):",
-            f'            raise FileNotFoundError("{lib.name} was not found on your system. Is this package correctly installed?")',
-        ]
+        if len(libs) > 1:
+            contents.append("    libs = []")
 
-        if is_windows:
-            contents.append(
-                f'        raise Exception("{lib.name} could not be loaded. Do you have Visual Studio C++ Redistributible installed?")'
-            )
-        else:
-            contents.append(
-                f'        raise FileNotFoundError("{lib.name} could not be loaded. There is a missing dependency.")'
-            )
+        contents.append("    root = abspath(dirname(__file__))")
+
+        for lib in libs:
+            rel = lib.relative_to(init_py.parent)
+            components = ", ".join(map(repr, rel.parts))
+
+            contents += [
+                "",
+                f"    lib_path = join(root, {components})",
+                "",
+                "    try:",
+            ]
+
+            if is_macos:
+                load = "CDLL(lib_path, mode=RTLD_GLOBAL)"
+            else:
+                load = "cdll.LoadLibrary(lib_path)"
+
+            if len(libs) > 1:
+                contents.append(f"        libs.append({load})")
+            else:
+                contents.append(f"        return {load}")
+
+            contents += [
+                "    except FileNotFoundError:",
+                f"        if not exists(lib_path):",
+                f'            raise FileNotFoundError("{lib.name} was not found on your system. Is this package correctly installed?")',
+            ]
+
+            if is_windows:
+                contents.append(
+                    f'        raise Exception("{lib.name} could not be loaded. Do you have Visual Studio C++ Redistributible installed?")'
+                )
+            else:
+                contents.append(
+                    f'        raise FileNotFoundError("{lib.name} could not be loaded. There is a missing dependency.")'
+                )
+
+        if len(libs) > 1:
+            contents += ["    return libs"]
 
         contents += ["", "__lib = __load_library()", ""]
 
