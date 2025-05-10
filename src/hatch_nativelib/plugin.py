@@ -54,10 +54,6 @@ class NativelibHook(BuildHookInterface):
             else:
                 os.environ["PKG_CONFIG_PATH"] = os.pathsep.join(pcpaths)
 
-        if is_macos:
-            is_editable = version == "editable"
-            self._relink_macos_libs(is_editable)
-
     def clean(self, versions: T.List[str]) -> None:
         root = pathlib.Path(self.root)
         for pcfg in self._pcfiles:
@@ -212,43 +208,6 @@ class NativelibHook(BuildHookInterface):
             return f"lib{lib}.dylib"
         else:
             return f"lib{lib}.so"
-
-    def _relink_macos_libs(self, is_editable: bool):
-        from .macos_relink import relink_pkgconf_packages, Package, Library
-
-        pkgs = []
-        for pcfg in self._pcfiles:
-            if pcfg.shared_libraries is None:
-                continue
-
-            if pcfg.libdir:
-                libdir = self.root_pth / pathlib.PurePosixPath(pcfg.libdir)
-            else:
-                libdir = self.root_pth / pcfg.get_pc_path().parent
-
-            shared_libs = []
-            for lib in pcfg.shared_libraries:
-                lib_path = libdir / self._make_shared_lib_fname(lib)
-                rel = lib_path.relative_to(self.root_pth)
-                dist_path = pathlib.Path(
-                    self.build_config.get_distribution_path(str(rel))
-                )
-                shared_libs.append(Library(file_path=lib_path, dist_path=dist_path))
-
-            requires = []
-            if pcfg.requires:
-                requires.extend(pcfg.requires)
-            if pcfg.requires_private:
-                requires.extend(pcfg.requires_private)
-            pkgs.append(
-                Package(
-                    name=pcfg.get_name(),
-                    shared_libs=shared_libs,
-                    requires=requires,
-                )
-            )
-
-        relink_pkgconf_packages(pkgs, is_editable)
 
     @functools.cached_property
     def _pcfiles(self) -> T.List[PcFileConfig]:
