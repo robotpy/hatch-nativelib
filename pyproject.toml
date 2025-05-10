@@ -24,7 +24,6 @@ dependencies = [
     "packaging",
     "pkgconf",
     "validobj~=1.2",
-    "delocate; platform_system == 'Darwin'",
 ]
 
 [project.urls]
