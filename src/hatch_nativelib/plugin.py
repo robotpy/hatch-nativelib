@@ -38,8 +38,21 @@ class NativelibHook(BuildHookInterface):
         #     for pkg in WheelBuilder(self.root).config.packages
         # ]
 
+        pcpaths: T.Set[str] = set()
         for pcfg in self._pcfiles:
-            self._generate_pcfile(pcfg, build_data)
+            pcfile = self._generate_pcfile(pcfg, build_data)
+            pcpaths.add(str(pcfile.parent))
+
+        if pcpaths:
+            # Add to PKG_CONFIG_PATH so that it can be resolved by other hatchling
+            # plugins if desired
+            pkg_config_path = os.environ.get("PKG_CONFIG_PATH")
+            if pkg_config_path is not None:
+                os.environ["PKG_CONFIG_PATH"] = os.pathsep.join(
+                    (pkg_config_path, *pcpaths)
+                )
+            else:
+                os.environ["PKG_CONFIG_PATH"] = os.pathsep.join(pcpaths)
 
         if is_macos:
             is_editable = version == "editable"
@@ -59,7 +72,9 @@ class NativelibHook(BuildHookInterface):
         dist_pth = self.build_config.get_distribution_path(str(rel))
         return ".".join(dist_pth.split(os.sep))
 
-    def _generate_pcfile(self, pcfg: PcFileConfig, build_data: T.Dict[str, T.Any]):
+    def _generate_pcfile(
+        self, pcfg: PcFileConfig, build_data: T.Dict[str, T.Any]
+    ) -> pathlib.Path:
 
         pcfile_rel = pcfg.get_pc_path()
         pcfile = self.root_pth / pcfile_rel
@@ -158,6 +173,7 @@ class NativelibHook(BuildHookInterface):
         maybe_write_file(pcfile, content)
 
         build_data["artifacts"].append(pcfile_rel.as_posix())
+        return pcfile
 
     def _generate_init_py(
         self,
