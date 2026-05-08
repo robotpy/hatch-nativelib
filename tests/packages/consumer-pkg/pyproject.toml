@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling", "hatch-meson", "hatch-nativelib", "ninja"]
+build-backend = "hatchling.build"
+
+[project]
+name = "consumer-pkg"
+version = "1.0.0"
+description = "Consumer package"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/consumer_pkg"]
+
+[tool.hatch.build.hooks.meson]
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/consumer_pkg/consumer.pc"
+shared_libraries = ["consumer"]
+requires = ["provider"]
+extra_cflags = "-DCONSUMER_DLL_IMPORTS"

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling", "hatch-meson", "hatch-nativelib", "ninja"]
+build-backend = "hatchling.build"
+
+[project]
+name = "provider-pkg"
+version = "1.0.0"
+description = "Provider package"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/provider_pkg"]
+
+[tool.hatch.build.hooks.meson]
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/provider_pkg/provider.pc"
+includedir = "src/provider_pkg/include"
+shared_libraries = ["provider"]
+extra_cflags = "-DPROVIDER_DLL_IMPORTS"

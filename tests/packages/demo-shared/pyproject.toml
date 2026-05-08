@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling", "hatch-nativelib"]
+build-backend = "hatchling.build"
+
+[project]
+name = "demo-pkg"
+version = "1.2.3"
+description = "Demo package"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/demo_pkg"]
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/demo_pkg/demo.pc"
+includedir = "src/demo_pkg/include"
+libdir = "src/demo_pkg/lib"
+shared_libraries = ["demo"]
+requires = ["dep1", "dep2"]
+requires_private = ["priv1", "priv2"]
+libs_private = "-lm"
+extra_cflags = "-DUSE_DEMO"

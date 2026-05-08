@@ -17,21 +17,21 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: psf/black@stable
   
   check-mypy:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     # - uses: jpetrucciani/mypy-check@0.930
     # .. can't use that because we need to install pytest
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
-        python-version: "3.8"
+        python-version: "3.10"
     - name: Install requirements
       run: |
-        pip --disable-pip-version-check install mypy .
+        pip --disable-pip-version-check install mypy .[test]
     - name: Run mypy
       run: |
         mypy .
@@ -43,80 +43,73 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         submodules: recursive
         fetch-depth: 0
 
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
-        python-version: "3.8"
+        python-version: "3.10"
 
     - run: pipx run build
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: dist
         path: dist
 
-  # test:
-  #   needs: [build]
-  #   runs-on: ${{ matrix.os }}
-  #   strategy:
-  #     matrix:
-  #       os: [windows-latest, macos-13, ubuntu-20.04]
-  #       python_version: [3.6, 3.7, 3.8, 3.9, "3.10", "3.11", "3.12"]
-  #       architecture: [x86, x64]
-  #       exclude:
-  #       - os: macos-13
-  #         architecture: x86
-  #       - os: ubuntu-20.04
-  #         architecture: x86
+  test:
+    needs: [build]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14, windows-2022]
 
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #     with:
-  #       submodules: recursive
-  #       fetch-depth: 0
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        submodules: recursive
+        fetch-depth: 0
     
-  #   - uses: actions/setup-python@v5
-  #     with:
-  #       python-version: ${{ matrix.python_version }}
-  #       architecture: ${{ matrix.architecture }}
+    - uses: actions/setup-python@v6
+      with:
+        python-version: "3.10"
 
-  #   - name: Download build artifacts
-  #     uses: actions/download-artifact@v4
-  #     with:
-  #       name: dist
-  #       path: dist
+    - name: Download build artifacts
+      uses: actions/download-artifact@v7
+      with:
+        name: dist
+        path: dist
     
-  #   - name: Install test dependencies
-  #     run: python -m pip --disable-pip-version-check install -r tests/requirements.txt
-    
-  #   - name: Setup MSVC compiler
-  #     uses: ilammy/msvc-dev-cmd@v1
-  #     if: matrix.os == 'windows-latest'
+    - name: Setup MSVC
+      uses: bus1/cabuild/action/msdevshell@e22aba57d6e74891d059d66501b6b5aed8123c4d  # v1
+      with:
+        architecture: x64
+      if: runner.os == 'Windows'
 
-  #   - name: Test wheel
-  #     shell: bash
-  #     run: |
-  #       cd dist
-  #       python -m pip --disable-pip-version-check install *.whl
-  #       cd ../tests
-  #       python -m pytest
+    - name: Install wheel
+      shell: bash
+      run: |
+        cd dist
+        python -m pip --disable-pip-version-check install $(ls *.whl)[test]
+  
+    - name: Test wheel
+      run: python -m pytest -v
 
   publish:
     runs-on: ubuntu-latest
     # needs: [check, check-mypy, check-doc, build, test]
-    needs: [check, check-mypy, build]
+    needs: [check, check-mypy, build, test]
     permissions:
       id-token: write
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
 
     steps:
     - name: Download build artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         name: dist
         path: dist
