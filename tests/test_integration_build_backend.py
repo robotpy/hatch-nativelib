@@ -101,3 +101,21 @@ def test_build_generates_init_module_for_multiple_shared_libraries(
     assert shared_library_filename("demo") in init_module
     assert shared_library_filename("helper") in init_module
     assert "return libs" in init_module
+
+
+def test_build_resolves_intra_project_requires_on_first_run(project_factory) -> None:
+    project_factory.copy_package_fixture("demo-editable-chain")
+    project_factory.write(
+        f"src/demo_pkg/lib/{shared_library_filename('provider')}",
+        "not-a-real-library",
+    )
+    project_factory.write(
+        f"src/demo_pkg/lib/{shared_library_filename('consumer')}",
+        "not-a-real-library",
+    )
+
+    result = project_factory.build_wheel()
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    init_module = project_factory.read("src/demo_pkg/_init_consumer.py")
+    assert "import demo_pkg._init_provider" in init_module

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling", "hatch-nativelib"]
+build-backend = "hatchling.build"
+
+[project]
+name = "demo-editable-chain"
+version = "1.2.3"
+description = "Demo editable dependency chain"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/demo_pkg"]
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/demo_pkg/provider.pc"
+name = "provider"
+libdir = "src/demo_pkg/lib"
+shared_libraries = ["provider"]
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/demo_pkg/consumer.pc"
+name = "consumer"
+libdir = "src/demo_pkg/lib"
+shared_libraries = ["consumer"]
+requires = ["provider"]
