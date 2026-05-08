@@ -1,0 +1,19 @@
+[build-system]
+requires = ["hatchling", "hatch-nativelib"]
+build-backend = "hatchling.build"
+
+[project]
+name = "demo-pkg"
+version = "1.2.3"
+description = "Demo package"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/demo_pkg"]
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/demo_pkg/enabled.pc"
+enable_if = "python_version >= '3.8'"
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/demo_pkg/skipped.pc"
+enable_if = "python_version < '0'"

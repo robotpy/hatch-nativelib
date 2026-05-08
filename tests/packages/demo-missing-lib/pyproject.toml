@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling", "hatch-nativelib"]
+build-backend = "hatchling.build"
+
+[project]
+name = "demo-pkg"
+version = "1.2.3"
+description = "Demo package"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/demo_pkg"]
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/demo_pkg/demo.pc"
+libdir = "src/demo_pkg/lib"
+shared_libraries = ["missing"]
