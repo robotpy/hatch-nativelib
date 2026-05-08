@@ -38,21 +38,20 @@ class NativelibHook(BuildHookInterface):
         #     for pkg in WheelBuilder(self.root).config.packages
         # ]
 
-        pcpaths: T.Set[str] = set()
         for pcfg in self._pcfiles:
             pcfile = self._generate_pcfile(pcfg, build_data)
-            pcpaths.add(str(pcfile.parent))
+            self._add_pkg_config_path(str(pcfile.parent))
 
-        if pcpaths:
-            # Add to PKG_CONFIG_PATH so that it can be resolved by other hatchling
-            # plugins if desired
-            pkg_config_path = os.environ.get("PKG_CONFIG_PATH")
-            if pkg_config_path is not None:
-                os.environ["PKG_CONFIG_PATH"] = os.pathsep.join(
-                    (pkg_config_path, *pcpaths)
-                )
-            else:
-                os.environ["PKG_CONFIG_PATH"] = os.pathsep.join(pcpaths)
+    def _add_pkg_config_path(self, *paths: str) -> None:
+        current = os.environ.get("PKG_CONFIG_PATH")
+        entries = current.split(os.pathsep) if current else []
+
+        for path in paths:
+            if path not in entries:
+                entries.append(path)
+
+        if entries:
+            os.environ["PKG_CONFIG_PATH"] = os.pathsep.join(entries)
 
     def clean(self, versions: T.List[str]) -> None:
         root = pathlib.Path(self.root)
