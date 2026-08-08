@@ -119,3 +119,17 @@ def test_build_resolves_intra_project_requires_on_first_run(project_factory) -> 
     assert result.returncode == 0, result.stdout + result.stderr
     init_module = project_factory.read("src/demo_pkg/_init_consumer.py")
     assert "import demo_pkg._init_provider" in init_module
+
+
+def test_build_skips_requirement_without_init_module(project_factory) -> None:
+    project_factory.copy_package_fixture("demo-empty-init-dependency")
+    project_factory.write(
+        f"src/demo_pkg/lib/{shared_library_filename('consumer')}",
+        "not-a-real-library",
+    )
+
+    result = project_factory.build_wheel()
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    init_module = project_factory.read("src/demo_pkg/_init_consumer.py")
+    compile(init_module, "_init_consumer.py", "exec")
