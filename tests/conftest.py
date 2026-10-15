@@ -62,6 +62,7 @@ class TempProject:
             env=dict(self.env.env),
             text=True,
             capture_output=True,
+            check=False,
         )
 
     def install_current_project(self) -> None:
