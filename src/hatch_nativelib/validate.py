@@ -29,8 +29,7 @@ def _convert_validation_error(
         e = e.__cause__
 
     loc = "".join(locs)
-    if loc.startswith("."):
-        loc = loc[1:]
+    loc = loc.removeprefix(".")
     msg = "\n  ".join(msgs)
     vmsg = f"{fname}: {prefix}{loc}:\n  {msg}"
     return ValidationError(vmsg)
