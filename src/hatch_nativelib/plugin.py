@@ -22,7 +22,7 @@ is_macos = platform_sys == "Darwin"
 class NativelibHook(BuildHookInterface):
     PLUGIN_NAME = "nativelib"
 
-    def initialize(self, version: str, build_data: T.Dict[str, T.Any]) -> None:
+    def initialize(self, version: str, build_data: dict[str, T.Any]) -> None:
 
         # Don't need to generate files when creating an sdist
         if self.target_name != "wheel":
@@ -52,7 +52,7 @@ class NativelibHook(BuildHookInterface):
         if entries:
             os.environ["PKG_CONFIG_PATH"] = os.pathsep.join(entries)
 
-    def clean(self, versions: T.List[str]) -> None:
+    def clean(self, versions: list[str]) -> None:
         root = pathlib.Path(self.root)
         for pcfg in self._pcfiles:
             for relname in (pcfg.get_pc_path(), pcfg.get_init_module_path()):
@@ -67,7 +67,7 @@ class NativelibHook(BuildHookInterface):
         return ".".join(dist_pth.split(os.sep))
 
     def _generate_pcfile(
-        self, pcfg: PcFileConfig, build_data: T.Dict[str, T.Any]
+        self, pcfg: PcFileConfig, build_data: dict[str, T.Any]
     ) -> pathlib.Path:
 
         pcfile_rel = pcfg.get_pc_path()
@@ -173,7 +173,7 @@ class NativelibHook(BuildHookInterface):
         self,
         pcfg: PcFileConfig,
         prefix_path: pathlib.Path,
-        build_data: T.Dict[str, T.Any],
+        build_data: dict[str, T.Any],
     ):
         libinit_py_rel = pcfg.get_init_module_path()
         libinit_py = self.root_pth / libinit_py_rel
@@ -208,7 +208,7 @@ class NativelibHook(BuildHookInterface):
             return f"lib{lib}.so"
 
     @functools.cached_property
-    def _pcfiles(self) -> T.List[PcFileConfig]:
+    def _pcfiles(self) -> list[PcFileConfig]:
         pcfiles = []
         for i, raw_pc in enumerate(self.config.get("pcfile", [])):
             pcfile = parse_input(
@@ -232,8 +232,8 @@ class NativelibHook(BuildHookInterface):
 # TODO: this belongs in a separate script/api that can be used from multiple tools
 def _write_libinit_py(
     init_py: pathlib.Path,
-    libs: T.List[pathlib.Path],
-    requires: T.List[str],
+    libs: list[pathlib.Path],
+    requires: list[str],
 ):
     """
     :param init_py: the _init module for the library(ies) that is written out

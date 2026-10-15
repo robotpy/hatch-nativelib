@@ -16,7 +16,7 @@ def _convert_validation_error(
     locs = []
     msgs = []
 
-    e: typing.Optional[BaseException] = ve
+    e: BaseException | None = ve
     while e is not None:
 
         if isinstance(e, errors.WrongFieldError):
@@ -36,7 +36,7 @@ def _convert_validation_error(
     return ValidationError(vmsg)
 
 
-def parse_input(value: typing.Any, spec: typing.Type[T], fname, prefix: str) -> T:
+def parse_input(value: typing.Any, spec: type[T], fname, prefix: str) -> T:
     try:
         return validobj.validation.parse_input(value, spec)
     except errors.ValidationError as ve:

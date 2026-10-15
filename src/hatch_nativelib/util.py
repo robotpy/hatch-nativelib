@@ -1,9 +1,8 @@
 import pathlib
-import typing as T
 
 
 def maybe_write_file(
-    path: pathlib.Path, content: str, *, encoding: T.Optional[str] = None
+    path: pathlib.Path, content: str, *, encoding: str | None = None
 ) -> bool:
     # returns True if new content written
     if path.exists():
