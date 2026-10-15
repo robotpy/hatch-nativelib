@@ -1,2 +1,3 @@
 import consumer_pkg._init_consumer
+
 from ._consumer_ext import consumer_twice_plus_one

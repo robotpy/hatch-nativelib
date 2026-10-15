@@ -4,10 +4,9 @@ import pathlib
 import platform
 import typing as T
 
-from hatchling.builders.hooks.plugin.interface import BuildHookInterface
-
-from packaging.markers import Marker
 import pkgconf
+from hatchling.builders.hooks.plugin.interface import BuildHookInterface
+from packaging.markers import Marker
 
 from .config import PcFileConfig
 from .util import maybe_write_file
